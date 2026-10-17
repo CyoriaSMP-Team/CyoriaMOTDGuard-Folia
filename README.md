@@ -22,6 +22,6 @@ The build creates `target/CyoriaMOTDGuard-${project.version}.jar`. Paper and Pac
 
 ## Validation status
 
-Version 1.0.2-folia.1 was smoke-tested on Folia 1.21.11-14 with PacketEvents 2.13.0 and MiniMOTD 2.2.5, without BannerMOTDplus installed. Version 1.0.3-folia.1 reads the status protocol from Paper's public API, so classification no longer depends on PacketEvents or successful channel lookup. Handler removal still uses public Netty `ChannelPipeline` access after the previous prerelease logged `IllegalAccessException` on a Geyser status path.
+Version 1.0.2-folia.1 was smoke-tested on Folia 1.21.11-14 with PacketEvents 2.13.0 and MiniMOTD 2.2.5, without BannerMOTDplus installed. Version 1.0.3-folia.1 reads the status protocol from Paper's public API, so classification no longer depends on PacketEvents or successful channel lookup. Version 1.0.3-folia.2 calls the public Netty `ChannelPipeline` API reflectively so the plugin compiles against Paper's provided API without bundling Netty.
 
 Real Bedrock login and BannerMOTDplus decoration remain unverified. The connection lookup still uses reflection into server internals and may need adjustment after server changes.

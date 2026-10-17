@@ -2,9 +2,6 @@ package cyoria.motd;
 
 import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
 import com.destroystokyo.paper.network.StatusClient;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelPipeline;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -35,15 +32,18 @@ public final class CyoriaMOTDGuard extends JavaPlugin implements Listener {
         if (version == 774) return;
 
         Object channel = findChannel(client);
-        if (!(channel instanceof Channel nettyChannel)) {
+        if (channel == null) {
             if (!warned) {warned=true; getLogger().warning("Status client channel unavailable for protocol " + version + "; cannot remove Banner MOTD handler");}
             return;
         }
         try {
-            ChannelPipeline pipeline = nettyChannel.pipeline();
-            ChannelHandler handler = pipeline.get("native_motd");
-            if (handler != null) pipeline.remove("native_motd");
-        } catch (Exception ex) {
+            ClassLoader loader = channel.getClass().getClassLoader();
+            Object pipeline = Class.forName("io.netty.channel.Channel", false, loader)
+                    .getMethod("pipeline").invoke(channel);
+            Class<?> pipelineType = Class.forName("io.netty.channel.ChannelPipeline", false, loader);
+            Object handler = pipelineType.getMethod("get", String.class).invoke(pipeline, "native_motd");
+            if (handler != null) pipelineType.getMethod("remove", String.class).invoke(pipeline, "native_motd");
+        } catch (ReflectiveOperationException ex) {
             if (!warned) {warned=true; getLogger().warning("Status router could not inspect Netty: " + ex.getClass().getSimpleName());}
         }
     }
