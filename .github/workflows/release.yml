@@ -27,4 +27,4 @@ jobs:
             --verify-tag \
             --prerelease \
             --title "$GITHUB_REF_NAME" \
-            --notes "Experimental Folia 1.21.11 build. Uses public Netty ChannelPipeline access; requires PacketEvents 2.13.0. BannerMOTDplus is optional."
+            --notes "Experimental Folia 1.21.11 build. Uses Paper's public status protocol API and Netty ChannelPipeline access. BannerMOTDplus is optional."

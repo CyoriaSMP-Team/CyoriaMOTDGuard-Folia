@@ -1,11 +1,10 @@
 package cyoria.motd;
 
 import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
+import com.destroystokyo.paper.network.StatusClient;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelPipeline;
-import com.github.retrooper.packetevents.PacketEvents;
-import com.github.retrooper.packetevents.protocol.player.User;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -26,17 +25,22 @@ public final class CyoriaMOTDGuard extends JavaPlugin implements Listener {
 
     @EventHandler(priority=EventPriority.MONITOR)
     public void onPing(PaperServerListPingEvent event) {
-        Object channel = findChannel(event.getClient());
-        if (channel == null) {
-            if (!warned) {warned=true; getLogger().warning("Status client channel unavailable: cannot determine version");}
+        StatusClient client = event.getClient();
+        int version = client.getProtocolVersion();
+        if (version < 0) {
+            if (!warned) {warned=true; getLogger().warning("Status client protocol unavailable");}
+            return;
+        }
+        if (seen.add(version)) getLogger().info("Observed status protocol via Paper: " + version);
+        if (version == 774) return;
+
+        Object channel = findChannel(client);
+        if (!(channel instanceof Channel nettyChannel)) {
+            if (!warned) {warned=true; getLogger().warning("Status client channel unavailable for protocol " + version + "; cannot remove Banner MOTD handler");}
             return;
         }
         try {
-            User user = PacketEvents.getAPI().getProtocolManager().getUser(channel);
-            int version = user == null || user.getClientVersion() == null ? -1 : user.getClientVersion().getProtocolVersion();
-            if (seen.add(version)) getLogger().info("Observed status protocol via PacketEvents: " + version);
-            if (version == 774) return;
-            ChannelPipeline pipeline = ((Channel) channel).pipeline();
+            ChannelPipeline pipeline = nettyChannel.pipeline();
             ChannelHandler handler = pipeline.get("native_motd");
             if (handler != null) pipeline.remove("native_motd");
         } catch (Exception ex) {

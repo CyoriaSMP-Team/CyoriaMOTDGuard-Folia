@@ -4,5 +4,4 @@ main: cyoria.motd.CyoriaMOTDGuard
 api-version: '1.21'
 author: CytechTeam
 folia-supported: true
-depend: [packetevents]
 softdepend: [BannerMOTDplus]
